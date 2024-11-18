@@ -1,0 +1,1 @@
+# ffxiv_treasure_dungeon_tracker
