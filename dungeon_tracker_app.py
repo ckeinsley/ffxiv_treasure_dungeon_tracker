@@ -189,7 +189,7 @@ class DungeonTrackerApp:
         ax.clear()
         ax.bar(["Left", "Right"], [graph_data["Left"], graph_data["Right"]], color=["blue", "green"])
         ax.set_title(f"Room {room_id} Door Selections")
-        ax.set_ylim(0, 10)
+        ax.set_ylim(0, 20)
         self.graphs[room_id]["canvas"].draw()
 
     def record_choice(self, room, door):
