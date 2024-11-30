@@ -1,5 +1,5 @@
 import sqlite3
-from tkinter import Tk, Label, Button, Frame, DISABLED, NORMAL, END, messagebox, Toplevel, BOTH, simpledialog, ttk
+from tkinter import Tk, Label, Button, Text, Frame, DISABLED, NORMAL, END, WORD, messagebox, Toplevel, BOTH, simpledialog, ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from datetime import datetime
@@ -183,13 +183,15 @@ class DungeonTrackerApp:
         
         for door_name, count in self.cursor.fetchall():
             graph_data[door_name.capitalize()] = count
-
+        
+        max_count = max(graph_data.values())
+        
         # Update the graph with the new data
         ax = self.graphs[room_id]["axes"]
         ax.clear()
         ax.bar(["Left", "Right"], [graph_data["Left"], graph_data["Right"]], color=["blue", "green"])
         ax.set_title(f"Room {room_id} Door Selections")
-        ax.set_ylim(0, 20)
+        ax.set_ylim(0, max_count + 5)
         self.graphs[room_id]["canvas"].draw()
 
     def record_choice(self, room, door):
@@ -262,13 +264,15 @@ class DungeonTrackerApp:
         # Create a new top-level window for the report
         report_window = Toplevel(self.main_frame)  # Reference to the root window
         report_window.title("Dungeon Run Report")
+        report_window.geometry("800x600")  # Set initial size
+        report_window.resizable(True, True)  # Make the window resizable
         
         # Set up a grid in the new window
         report_frame = Frame(report_window)
         report_frame.pack(fill=BOTH, expand=True)
 
         # Column headers
-        headers = ["Room", "Loot Obtained", "Left Door Correct %", "Right Door Correct %", "Visits"]
+        headers = ["Room", "Loot Obtained", "Left Door Correct %", "Right Door Correct %", "Left Door Count", "Right Door Count", "Visits"]
         for col, header in enumerate(headers):
             label = Label(report_frame, text=header, font=("Helvetica", 10, "bold"), anchor="w")
             label.grid(row=0, column=col, padx=10, pady=5, sticky="w")
@@ -301,20 +305,29 @@ class DungeonTrackerApp:
             left_correct_percentage = (left_correct / total_visits * 100) if total_visits > 0 else 0
             right_correct_percentage = (right_correct / total_visits * 100) if total_visits > 0 else 0
             left_correct_percentage_string = f"{left_correct_percentage:.2f}%"
-            right_correct_percentage_string =f"{right_correct_percentage:.2f}%"
+            right_correct_percentage_string = f"{right_correct_percentage:.2f}%"
             
             # Format loot data for display
-            loot_display = ", ".join(set(loot)) if loot else "No loot recorded"
+            loot_display = "\n".join(set(loot)) if loot else "No loot recorded"
             
             if room == 5:
                 left_correct_percentage_string = "-"
                 right_correct_percentage_string = "-"
-                
+            
             # Populate the grid with data
-            row_data = [f"Room {room}", loot_display, left_correct_percentage_string, right_correct_percentage_string, str(total_visits)]
+            row_data = [
+                f"Room {room}", loot_display, left_correct_percentage_string, right_correct_percentage_string, 
+                str(left_correct), str(right_correct), str(total_visits)
+            ]
             for col, data in enumerate(row_data):
-                label = Label(report_frame, text=data, font=("Helvetica", 10), anchor="w")
-                label.grid(row=room, column=col, padx=10, pady=5, sticky="w")            
+                if col == 1:  # Loot column
+                    text_widget = Text(report_frame, height=4, wrap=WORD)
+                    text_widget.insert(END, data)
+                    text_widget.config(state=DISABLED)
+                    text_widget.grid(row=room, column=col, padx=10, pady=5, sticky="w")
+                else:
+                    label = Label(report_frame, text=data, font=("Helvetica", 10), anchor="w")
+                    label.grid(row=room, column=col, padx=10, pady=5, sticky="w")
 
     def close(self):
         """Close the database connection."""
