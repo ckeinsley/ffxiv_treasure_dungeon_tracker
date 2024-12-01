@@ -267,7 +267,7 @@ class DungeonTrackerApp:
         report_window.geometry("800x600")  # Set initial size
         report_window.resizable(True, True)  # Make the window resizable
         
-        # Set up a grid in the new window
+        # Set up a grid in the new window 
         report_frame = Frame(report_window)
         report_frame.pack(fill=BOTH, expand=True)
 
